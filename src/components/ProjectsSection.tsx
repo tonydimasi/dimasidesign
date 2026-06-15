@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'motion/react';
-import { ArrowUpRight } from 'lucide-react';
+import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from 'motion/react';
 
 interface Project {
   id: string;
@@ -42,223 +41,213 @@ const PROJECTS: Project[] = [
   {
     id: 'fashion-archive',
     title: 'ARCHIVAL FASHION',
-    description: 'E-commerce interattivo per un prestigioso archivio milanese di moda di lusso d\'epoca. Tipografia audace e griglie spaziante con cura.',
+    description: 'E-commerce interattivo per un prestigioso archivio milanese di moda di lusso d\'epoca. Tipografia audace e griglie spazianti con cura.',
     meta: 'LUXURY RETRO',
     tag: 'ART DIRECTION'
   }
 ];
+
+/* ─── Cyan grid overlay — emerges gently with scroll ─── */
+const CyanGrid: React.FC<{ opacity: any }> = ({ opacity }) => (
+  <motion.div
+    className="absolute inset-0 pointer-events-none overflow-hidden"
+    style={{ opacity }}
+  >
+    <svg
+      className="absolute inset-0 w-full h-full"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <pattern
+          id="cyan-grid"
+          x="0" y="0"
+          width="80" height="80"
+          patternUnits="userSpaceOnUse"
+        >
+          <path
+            d="M 80 0 L 0 0 0 80"
+            fill="none"
+            stroke="#4be8f2"
+            strokeWidth="0.4"
+            strokeOpacity="0.55"
+          />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#cyan-grid)" />
+    </svg>
+    {/* Subtle radial fade — grid brighter at centre */}
+    <div
+      className="absolute inset-0"
+      style={{
+        background: 'radial-gradient(ellipse 70% 60% at 50% 50%, transparent 30%, #1d1d1d 100%)'
+      }}
+    />
+  </motion.div>
+);
 
 export const ProjectsSection: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Bind scroll container event listening
   useEffect(() => {
     const pane = document.getElementById('main-scroll-pane') as HTMLDivElement;
-    if (pane) {
-      setScrollContainer(pane);
-    }
+    if (pane) setScrollContainer(pane);
   }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     container: scrollContainer ? { current: scrollContainer } : undefined,
-    offset: ["start start", "end end"]
+    offset: ['start start', 'end end']
   });
 
-  // Calculate high-precision active card index based on progress segment mapping
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    const computedIndex = Math.min(PROJECTS.length - 1, Math.floor(latest * PROJECTS.length));
-    if (computedIndex !== activeIndex && computedIndex >= 0) {
-      setActiveIndex(computedIndex);
-    }
+  /* Grid opacity: 0 at scroll start → 0.9 at scroll end, eased */
+  const gridOpacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 0.18, 0.32, 0.42]);
+
+  useMotionValueEvent(scrollYProgress, 'change', (latest) => {
+    const idx = Math.min(PROJECTS.length - 1, Math.floor(latest * PROJECTS.length));
+    if (idx !== activeIndex && idx >= 0) setActiveIndex(idx);
   });
 
   const activeProject = PROJECTS[activeIndex];
 
   return (
-    <div 
+    <div
       id="projects-section-container"
       ref={sectionRef}
       className="relative w-full bg-[#1d1d1d] select-none z-20 font-sans"
     >
-      
-      {/* 
-        ========================================================================
-        1. STRUCTURAL SNAP PANELS
-        These items are rendered in standard document flow. They determine the
-        exact height of our scroll block (500vh) and perfectly catch the
-        parent container's CSS snapping features.
-        ========================================================================
-      */}
+      {/* ── Scroll height anchors ── */}
       {PROJECTS.map((project) => (
-        <div 
+        <div
           key={`anchor-${project.id}`}
           className="project-snap-anchor w-full h-screen relative pointer-events-none"
         />
       ))}
 
-      {/* 
-        ========================================================================
-        2. STICKY DISPLAY PORTAL
-        Fixed to the top of the viewport during the entire scroll progress.
-        This keeps the layout perfectly stable, allowing elements on the screen
-        to perform pure, gorgeous micro-animations without layout shifting.
-        ========================================================================
-      */}
+      {/* ── Sticky viewport ── */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="sticky top-0 left-0 w-full h-screen overflow-hidden flex items-center justify-center px-4 sm:px-8 md:px-12 lg:px-16">
-          
-          <div 
-            className="w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-12 md:gap-16"
-          >
-            
-            {/* 
-              ==================================================================
-              LEFT PANEL (STATIONARY TYPOGRAPHY):
-              Holds exclusively the user's strategic copys in uppercase (stampatello)
-              at least 40px (using text-[40px] dynamically for desktop), using the
-              clean Inter font with absolutely zero tags, indicators or CTAs.
-              ==================================================================
-            */}
-            <div className="w-full md:w-7/12 flex flex-col justify-center items-start text-left pointer-events-auto">
-              <p className="font-sans font-light uppercase tracking-tight text-white text-2xl sm:text-3xl lg:text-[40px] leading-[1.2] select-text max-w-2xl">
+
+          {/* Cyan grid — fades in as user scrolls */}
+          <CyanGrid opacity={gridOpacity} />
+
+          <div className="relative z-10 w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
+
+            {/* ── LEFT: wide text column ── */}
+            <div className="w-full md:w-[58%] flex flex-col justify-center items-start text-left pointer-events-auto">
+              <p
+                className="font-sans font-light uppercase tracking-tight text-white leading-[1.18] select-text"
+                style={{ fontSize: 'clamp(1.5rem, 3.2vw, 2.6rem)' }}
+              >
                 DESIGNER SPECIALIZZATO IN UX/UI CON UN APPROCCIO STRATEGICO. TRASFORMO PROBLEMI COMPLESSI IN ESPERIENZE DIGITALI INTUITIVE E COINVOLGENTI. IL MIO BACKGROUND INCLUDE BRANDING, SVILUPPO WEB E DIREZIONE ARTISTICA. QUESTO MI PERMETTE DI VEDERE I PROGETTI DA PIÙ ANGOLAZIONI E CREARE SOLUZIONI CHE FUNZIONANO SIA ESTETICAMENTE CHE STRATEGICAMENTE. LAVORO CON STARTUP, AGENZIE E AZIENDE CONSOLIDATE IN ITALIA E ALL'ESTERO.
               </p>
             </div>
 
-            {/* 
-              ==================================================================
-              RIGHT PANEL (TACTILE OVERLAPPING CARDS):
-              Implements perfect cinematic popLayout transitions where the old
-              portrait card rises gracefully and fades away, and the new card
-              ascends and scales in.
-              ==================================================================
-            */}
-            <div className="w-full md:w-5/12 flex items-center justify-center relative h-[380px] sm:h-[440px] md:h-[500px] pointer-events-auto">
+            {/* ── RIGHT: taller card ── */}
+            <div
+              className="w-full md:w-[38%] flex items-center justify-center relative pointer-events-auto"
+              style={{ height: 'clamp(420px, 58vh, 620px)' }}
+            >
               <AnimatePresence mode="popLayout">
-                <motion.div 
+                <motion.div
                   key={activeIndex}
-                  initial={{ opacity: 0, y: 140, scale: 0.94, rotate: 2 }}
-                  animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, y: -140, scale: 0.94, rotate: -2 }}
-                  transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute w-full max-w-[260px] sm:max-w-[310px] md:max-w-[340px] aspect-[3/4] flex flex-col bg-[#121212] p-2.5 rounded-[24px] border-2 border-[#4be8f2] shadow-[0_0_30px_rgba(75,232,242,0.18)] h-auto"
+                  initial={{ opacity: 0, y: 100, scale: 0.96, filter: 'blur(6px)' }}
+                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: -100, scale: 0.96, filter: 'blur(6px)' }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute w-full flex flex-col bg-[#121212] rounded-[24px] border border-[#4be8f2]/70 shadow-[0_0_40px_rgba(75,232,242,0.13)]"
+                  style={{ height: 'clamp(420px, 58vh, 620px)' }}
                 >
-                  
-                  {/* Portrait aspect preview container (3/4 layout ratio) */}
-                  <div 
-                    className="relative w-full flex-1 rounded-[16px] overflow-hidden bg-zinc-950 shadow-inner"
-                  >
-                    
-                    {/* ====== INTERFACE 1: MC GEOPOLICY ====== */}
+                  {/* Card inner preview — takes most of the height */}
+                  <div className="relative flex-1 rounded-[20px] overflow-hidden bg-zinc-950 m-2.5 mb-0">
+
                     {activeProject.id === 'mc-geopolicy' && (
-                      <div className="absolute inset-0 bg-[#090b11] p-5 flex flex-col justify-between overflow-hidden font-sans">
-                        {/* Concentric vector relationship wires */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none scale-[0.65] opacity-35">
-                          <div className="w-96 h-96 rounded-full border border-dashed border-[#4be8f2]/35 animate-[spin_120s_linear_infinite]" />
-                          <div className="absolute w-72 h-72 rounded-full border border-[#4be8f2]/25 animate-[spin_80s_linear_infinite_reverse]" />
-                          <div className="absolute w-44 h-44 rounded-full border border-dashed border-[#4be8f2]/20" />
-                          <div className="absolute w-12 h-12 rounded-full bg-[#4be8f2]/10 border border-[#4be8f2]/40" />
+                      <div className="absolute inset-0 bg-[#090b11] flex items-center justify-center overflow-hidden">
+                        <div className="relative flex items-center justify-center scale-75 opacity-40">
+                          <div className="w-72 h-72 rounded-full border border-dashed border-[#4be8f2]/40 animate-[spin_120s_linear_infinite]" />
+                          <div className="absolute w-52 h-52 rounded-full border border-[#4be8f2]/25 animate-[spin_80s_linear_infinite_reverse]" />
+                          <div className="absolute w-32 h-32 rounded-full border border-dashed border-[#4be8f2]/20" />
+                          <div className="absolute w-10 h-10 rounded-full bg-[#4be8f2]/10 border border-[#4be8f2]/40" />
                         </div>
                       </div>
                     )}
 
-                    {/* ====== INTERFACE 2: FINTECH SYSTEM ====== */}
                     {activeProject.id === 'fintech-design' && (
-                      <div className="absolute inset-0 bg-[#0c0d12] p-5 flex flex-col justify-between overflow-hidden font-sans">
-                        {/* Financial dashboard analytics (clean, abstract, tag-free) */}
-                        <div className="flex flex-col gap-4 my-auto w-full pointer-events-none px-2">
-                          <div className="bg-zinc-900/80 border border-white/5 rounded-lg p-3 flex flex-col gap-2">
-                            <div className="h-1.5 w-1/3 bg-zinc-700 rounded" />
-                            <div className="h-3 w-2/3 bg-white/10 rounded" />
-                            <div className="h-1 w-full bg-[#4be8f2]/25 rounded overflow-hidden">
-                              <div className="h-full bg-[#4be8f2] w-2/3" />
+                      <div className="absolute inset-0 bg-[#0c0d12] p-6 flex flex-col gap-4 justify-center overflow-hidden">
+                        {[0.66, 0.8, 0.5].map((w, i) => (
+                          <div key={i} className="bg-zinc-900/80 border border-white/5 rounded-lg p-3 flex flex-col gap-2">
+                            <div className="h-1.5 rounded bg-zinc-700" style={{ width: `${(i + 1) * 20}%` }} />
+                            <div className="h-1 w-full bg-[#4be8f2]/15 rounded overflow-hidden">
+                              <div className="h-full bg-[#4be8f2]" style={{ width: `${w * 100}%` }} />
                             </div>
                           </div>
-                          
-                          <div className="bg-zinc-900/80 border border-white/5 rounded-lg p-3 flex flex-col gap-2">
-                            <div className="h-1.5 w-1/4 bg-zinc-700 rounded" />
-                            <div className="h-3 w-1/2 bg-white/10 rounded" />
-                            <div className="h-1 w-full bg-emerald-500/20 rounded overflow-hidden">
-                              <div className="h-full bg-[#4be8f2] w-4/5" />
-                            </div>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     )}
 
-                    {/* ====== INTERFACE 3: CRYPTO MONITOR ====== */}
                     {activeProject.id === 'crypto-portfolio' && (
-                      <div className="absolute inset-0 bg-[#02050b] p-5 flex flex-col justify-between overflow-hidden font-sans">
-                        {/* Realtime token spark charts (clean grid + line, no labels) */}
-                        <div className="relative h-24 w-full flex items-end pointer-events-none my-auto">
-                          <svg className="w-full h-full text-[#4be8f2]" viewBox="0 0 100 30" preserveAspectRatio="none">
-                            <path 
-                              d="M0,25 Q15,8 30,22 T60,5 T90,18 T100,2" 
-                              fill="none" 
-                              stroke="currentColor" 
-                              strokeWidth="1.5"
-                            />
-                            <path 
-                              d="M0,25 Q15,8 30,22 T60,5 T90,18 T100,2 L100,30 L0,30 Z" 
-                              fill="url(#card-stack-gradient)" 
-                              opacity="0.15"
-                            />
-                            <defs>
-                              <linearGradient id="card-stack-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#4be8f2" />
-                                <stop offset="100%" stopColor="#4be8f2" stopOpacity="0" />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-                        </div>
+                      <div className="absolute inset-0 bg-[#02050b] flex items-center justify-center p-6 overflow-hidden">
+                        <svg className="w-full" viewBox="0 0 100 36" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#4be8f2" stopOpacity="0.25" />
+                              <stop offset="100%" stopColor="#4be8f2" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                          <path d="M0,28 Q15,10 30,24 T60,6 T90,20 T100,4 L100,36 L0,36Z" fill="url(#cg)" />
+                          <path d="M0,28 Q15,10 30,24 T60,6 T90,20 T100,4" fill="none" stroke="#4be8f2" strokeWidth="1.2" />
+                        </svg>
                       </div>
                     )}
 
-                    {/* ====== INTERFACE 4: NEURAL INTERFACE ====== */}
                     {activeProject.id === 'neural-interface' && (
-                      <div className="absolute inset-0 bg-[#0d0d0d] p-5 flex flex-col justify-between overflow-hidden font-sans">
-                        {/* Cybernetic active limits code-matrix */}
-                        <div className="my-auto flex flex-col gap-3 font-mono text-[8px] text-zinc-500 text-left px-2">
-                          <div className="border border-zinc-800 p-3 rounded-lg bg-zinc-950/60 flex flex-col gap-1.5">
-                            <div className="h-1 w-1/2 bg-[#4be8f2]/50 rounded" />
-                            <div className="h-1 w-5/6 bg-zinc-700 rounded" />
+                      <div className="absolute inset-0 bg-[#0d0d0d] p-6 flex flex-col gap-3 justify-center overflow-hidden">
+                        {[1, 0.6, 0.8].map((o, i) => (
+                          <div key={i} className="border border-zinc-800 p-3 rounded-lg bg-zinc-950/60 flex flex-col gap-1.5">
+                            <div className="h-1 rounded bg-[#4be8f2]" style={{ width: '45%', opacity: o }} />
+                            <div className="h-1 rounded bg-zinc-700" style={{ width: '70%' }} />
                           </div>
-
-                          <div className="border border-zinc-800 p-3 rounded-lg bg-zinc-950/60 flex flex-col gap-1.5">
-                            <div className="h-1 w-1/3 bg-zinc-700 rounded" />
-                            <div className="h-1 w-2/3 bg-zinc-700/60 rounded" />
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     )}
 
-                    {/* ====== INTERFACE 5: ARCHIVAL FASHION ====== */}
                     {activeProject.id === 'fashion-archive' && (
-                      <div className="absolute inset-0 bg-[#161413] p-5 flex flex-col justify-between overflow-hidden font-sans">
-                        {/* High-end minimalist design typography (clean concept) */}
-                        <div className="my-auto text-center flex flex-col items-center gap-1.5 pointer-events-none">
-                          <div className="w-12 h-12 rounded-full border border-[#4be8f2]/30 flex items-center justify-center">
-                            <div className="w-6 h-6 rounded-full border border-[#4be8f2]/50" />
-                          </div>
-                          <div className="h-2 w-16 bg-[#4be8f2]/40 rounded mt-2" />
+                      <div className="absolute inset-0 bg-[#161413] flex flex-col items-center justify-center gap-3 overflow-hidden">
+                        <div className="w-14 h-14 rounded-full border border-[#4be8f2]/30 flex items-center justify-center">
+                          <div className="w-7 h-7 rounded-full border border-[#4be8f2]/50" />
                         </div>
+                        <div className="h-1.5 w-20 bg-[#4be8f2]/40 rounded" />
                       </div>
                     )}
 
                   </div>
 
+                  {/* Card footer — project info */}
+                  <div className="px-4 py-4 flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="font-sans font-semibold uppercase tracking-tight text-white"
+                        style={{ fontSize: 'clamp(0.95rem, 1.4vw, 1.15rem)' }}
+                      >
+                        {activeProject.title}
+                      </span>
+                      <span className="text-[10px] font-light tracking-widest text-[#4be8f2] uppercase">
+                        {activeProject.tag}
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-light text-white/40 leading-relaxed line-clamp-2">
+                      {activeProject.description}
+                    </p>
+                  </div>
                 </motion.div>
               </AnimatePresence>
             </div>
 
           </div>
-
         </div>
       </div>
-
     </div>
   );
 };
