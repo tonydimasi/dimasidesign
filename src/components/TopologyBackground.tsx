@@ -381,7 +381,7 @@ export const TopologyBackground: React.FC<TopologyBackgroundProps> = ({
       state.currentOffsetY += (state.targetOffsetY - state.currentOffsetY) * lerpFactor;
 
       if (tiltPlateRef.current) {
-        tiltPlateRef.current.style.transform = `perspective(1000px) rotateX(${state.currentTiltY}deg) rotateY(${state.currentTiltX}deg) translate3d(${state.currentOffsetX}px, ${state.currentOffsetY}px, 0) scale(1.05)`;
+        tiltPlateRef.current.style.transform = `perspective(1000px) rotateX(${state.currentTiltY}deg) rotateY(${state.currentTiltX}deg) translate3d(${state.currentOffsetX}px, ${state.currentOffsetY}px, 0) scale(1.22)`;
       }
 
       const timeMs = nowMs - state.startTime;

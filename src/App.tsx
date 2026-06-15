@@ -32,21 +32,21 @@ export default function App() {
   };
 
   return (
-    <main className="w-screen h-screen bg-[#1d1d1d] overflow-hidden flex items-center justify-center p-2.5 sm:p-3.5 md:p-4 select-none text-white font-sans selection:bg-[#4be8f2] selection:text-[#1d1d1d]">
+    <main className="app-container">
       
       {/* 
         Interactive nested card with exactly 20px border radius as requested.
-        No shadow, and the solid dark background (#1d1d1d) is visible in the narrow margins around it.
+        No shadow, and the solid dark background (#1d1d1d) is visible in the narrow margins around it (8px).
       */}
       <div 
         id="hero-rounded-card"
-        className="relative w-full h-full rounded-[20px] overflow-hidden bg-[#1d1d1d] border border-white/5 flex items-center justify-center"
+        className="card-wrapper"
       >
         {/* 1. Interactive Topology Background (handles deforming fluid WebGL & 3D tilt plate) */}
         <TopologyBackground onPointerStateChange={handlePointerStateChange}>
           
           {/* 2. Logo positioned back in its original top-left corner inside the card */}
-          <div className="absolute top-8 left-8 z-40 animate-elegant-fade" style={{ animationDelay: '100ms' }}>
+          <div className="logo-placement animate-elegant-fade" style={{ animationDelay: '100ms' }}>
             <Logo />
           </div>
 
