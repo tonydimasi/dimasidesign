@@ -9,8 +9,10 @@ import { CustomCursor } from './components/CustomCursor';
 import { Logo } from './components/Logo';
 import { HeroSection } from './components/HeroSection';
 import { ProjectsSection } from './components/ProjectsSection';
+import { Preloader } from './components/Preloader';
 
 export default function App() {
+  const [isReady, setIsReady]   = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [cursor, setCursor] = useState({
     isHovered: false,
@@ -25,64 +27,49 @@ export default function App() {
     clientX: number,
     clientY: number
   ) => {
-    setCursor({
-      isHovered,
-      isPressed,
-      clientX,
-      clientY,
-    });
+    setCursor({ isHovered, isPressed, clientX, clientY });
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollTop = e.currentTarget.scrollTop;
+    const scrollTop    = e.currentTarget.scrollTop;
     const clientHeight = e.currentTarget.clientHeight;
-    const progress = Math.min(1, scrollTop / (clientHeight || 1));
+    const progress     = Math.min(1, scrollTop / (clientHeight || 1));
     setScrollProgress(progress);
   };
 
   return (
-    <main className="app-container">
-      
-      {/* 
-        Interactive nested card with exactly 20px border radius as requested.
-        No shadow, and the solid dark background (#1d1d1d) is visible in the narrow margins around it (8px).
-      */}
-      <div 
-        id="hero-rounded-card"
-        className="card-wrapper"
-      >
-        {/* 1. Interactive Topology Background (handles deforming fluid WebGL & 3D tilt plate) */}
-        <TopologyBackground onPointerStateChange={handlePointerStateChange} scrollProgress={scrollProgress}>
-          
-          {/* 2. Logo positioned back in its original top-left corner inside the card */}
-          <div className="logo-placement animate-elegant-fade" style={{ animationDelay: '100ms' }}>
-            <Logo />
-          </div>
+    <>
+      {/* Preloader — sits above everything, calls setIsReady when done */}
+      <Preloader onComplete={() => setIsReady(true)} />
 
-          {/* 3. Main scrollable view pane housing the fixed Hero and the scrolling projects */}
-          <div id="main-scroll-pane" className="scroll-container-pane" onScroll={handleScroll}>
-            
-            {/* The Hero section as the first screen */}
-            <div className="hero-scroll-screen">
-              <HeroSection />
+      <main className="app-container" style={{ opacity: isReady ? 1 : 0, transition: 'opacity 0.6s ease' }}>
+        <div id="hero-rounded-card" className="card-wrapper">
+
+          <TopologyBackground
+            onPointerStateChange={handlePointerStateChange}
+            scrollProgress={scrollProgress}
+          >
+            <div className="logo-placement animate-elegant-fade" style={{ animationDelay: '100ms' }}>
+              <Logo />
             </div>
 
-            {/* The premium Projects showcase as the second section */}
-            <ProjectsSection />
+            <div id="main-scroll-pane" className="scroll-container-pane" onScroll={handleScroll}>
+              <div className="hero-scroll-screen">
+                <HeroSection />
+              </div>
+              <ProjectsSection />
+            </div>
+          </TopologyBackground>
 
-          </div>
+        </div>
 
-        </TopologyBackground>
-      </div>
-
-      {/* 4. Fine-tuned custom target cursor tracking pointer coordinates */}
-      <CustomCursor
-        isHovered={cursor.isHovered}
-        isPressed={cursor.isPressed}
-        clientX={cursor.clientX}
-        clientY={cursor.clientY}
-      />
-    </main>
+        <CustomCursor
+          isHovered={cursor.isHovered}
+          isPressed={cursor.isPressed}
+          clientX={cursor.clientX}
+          clientY={cursor.clientY}
+        />
+      </main>
+    </>
   );
 }
-
