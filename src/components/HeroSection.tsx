@@ -8,12 +8,18 @@ import React from 'react';
 export const HeroSection: React.FC = () => {
   return (
     <section className="hero-outer-section">
-      
-      {/* 
-        Container holding the 4 typographic rows styled with raw CSS classes.
-        This allows total custom style control without Tailwind limits.
-      */}
-      <div className="hero-container">
+      <div className="hero-flex-layout">
+        
+        {/* Left Column: Premium Resume Description (Aligned with Logo left margin and bottom-aligned with WEBDEV) */}
+        <div 
+          className="hero-resume-text animate-elegant-fade"
+          style={{ animationDelay: '300ms' }}
+        >
+          Antonio Di Masi — UX/UI Designer con 10+ anni di esperienza nel design digitale, branding e sviluppo web.
+        </div>
+
+        {/* Right Column: Hero Typographic Rows */}
+        <div className="hero-container">
         
         {/* ROW 1: ?→! UX DESIGN */}
         <div 
@@ -60,6 +66,7 @@ export const HeroSection: React.FC = () => {
         </div>
 
       </div>
-    </section>
+    </div>
+  </section>
   );
 };

@@ -8,11 +8,13 @@ import { Vortex } from '../types';
 
 interface TopologyBackgroundProps {
   onPointerStateChange?: (isHovered: boolean, isPressed: boolean, x: number, y: number) => void;
+  scrollProgress?: number;
   children?: React.ReactNode;
 }
 
 export const TopologyBackground: React.FC<TopologyBackgroundProps> = ({
   onPointerStateChange,
+  scrollProgress = 0,
   children,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -678,6 +680,7 @@ export const TopologyBackground: React.FC<TopologyBackgroundProps> = ({
           willChange: 'transform',
           transformOrigin: 'center center',
           transformStyle: 'preserve-3d',
+          opacity: Math.max(0, 1 - scrollProgress * 1.5),
         }}
       >
         <canvas
