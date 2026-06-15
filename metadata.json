@@ -1,0 +1,6 @@
+{
+  "name": "Liquid Marble Background",
+  "description": "Interactive liquid marble swirly fluid background effect in dark teal and black, responding dynamically to cursor movement.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
