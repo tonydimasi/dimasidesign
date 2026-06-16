@@ -1,16 +1,5 @@
-/**
- * Preloader — SVG logo path reveal + counter + disturbo animato + barra rapida + wipe.
- *
- * Sequenza:
- * 1. Sfondo con noise SVG animato (disturbo CRT fluttuante)
- * 2. 4 path logo entrano scaleY 0→1 staggerate
- * 3. Barra caricamento rapida (sprint easing, 3px)
- * 4. Counter 000→100
- * 5. Pulse logo al completamento
- * 6. Clip-path wipe verso l'alto
- */
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface PreloaderProps {
   onComplete: () => void;
@@ -25,55 +14,52 @@ const LogoPaths = [
 
 const PATH_DELAYS = [0, 0.12, 0.24, 0.36];
 
-/* ── Animated noise canvas — disturbo CRT ── */
-const NoiseBackground: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef    = useRef<number>(0);
+/* ── Noise canvas — disturbo piatto, niente glow ── */
+const Noise: React.FC = () => {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const raf = useRef<number>(0);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let w = 0, h = 0;
-
     const resize = () => {
-      w = canvas.width  = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener('resize', resize);
 
     const draw = () => {
-      const imageData = ctx.createImageData(w, h);
-      const data = imageData.data;
+      const { width: w, height: h } = canvas;
+      const img  = ctx.createImageData(w, h);
+      const data = img.data;
       for (let i = 0; i < data.length; i += 4) {
-        // random grayscale pixel — sparse
-        const v = Math.random() > 0.55 ? Math.floor(Math.random() * 255) : 0;
-        data[i]     = v;
-        data[i + 1] = v;
-        data[i + 2] = v;
-        // low alpha — disturbo delicato
-        data[i + 3] = Math.random() > 0.6 ? Math.floor(Math.random() * 28) : 0;
+        const v      = Math.floor(Math.random() * 255);
+        const show   = Math.random() > 0.52;
+        data[i]      = v;
+        data[i + 1]  = v;
+        data[i + 2]  = v;
+        data[i + 3]  = show ? Math.floor(Math.random() * 22) : 0;
       }
-      ctx.putImageData(imageData, 0, 0);
-      rafRef.current = requestAnimationFrame(draw);
+      ctx.putImageData(img, 0, 0);
+      raf.current = requestAnimationFrame(draw);
     };
 
     draw();
-
     return () => {
-      cancelAnimationFrame(rafRef.current);
+      cancelAnimationFrame(raf.current);
       window.removeEventListener('resize', resize);
     };
   }, []);
 
   return (
     <canvas
-      ref={canvasRef}
+      ref={ref}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ mixBlendMode: 'screen', opacity: 0.07 }}
+      style={{ opacity: 1 }}
     />
   );
 };
@@ -86,28 +72,14 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
   const startRef              = useRef<number>(0);
   const DURATION              = 2200;
 
-  // Motion value for the fast loading bar — independent from counter
-  const barProgress = useMotionValue(0);
-  const barWidth    = useTransform(barProgress, [0, 1], ['0%', '100%']);
-
   useEffect(() => {
     document.body.style.overflow = 'hidden';
 
-    // Fast bar: sprints to 100% with expo ease — feels instant/snappy
-    animate(barProgress, 1, {
-      duration: 1.6,
-      ease: [0.22, 1, 0.36, 1],
-      delay: 0.15,
-    });
-
     const tick = (ts: number) => {
       if (!startRef.current) startRef.current = ts;
-      const elapsed  = ts - startRef.current;
-      const progress = Math.min(elapsed / DURATION, 1);
-      const eased    = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * 100));
-
-      if (progress < 1) {
+      const p = Math.min((ts - startRef.current) / DURATION, 1);
+      setCount(Math.round((1 - Math.pow(1 - p, 3)) * 100));
+      if (p < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
         setTimeout(() => setPhase('hold'), 180);
@@ -115,14 +87,8 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
       }
     };
 
-    const id = setTimeout(() => {
-      rafRef.current = requestAnimationFrame(tick);
-    }, 200);
-
-    return () => {
-      clearTimeout(id);
-      cancelAnimationFrame(rafRef.current);
-    };
+    const id = setTimeout(() => { rafRef.current = requestAnimationFrame(tick); }, 200);
+    return () => { clearTimeout(id); cancelAnimationFrame(rafRef.current); };
   }, []);
 
   const handleWipeComplete = () => {
@@ -137,55 +103,34 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
     <AnimatePresence>
       <motion.div
         key="preloader"
-        className="fixed inset-0 z-[9000] flex flex-col items-center justify-center bg-[#1d1d1d] overflow-hidden"
-        animate={phase === 'wipe'
-          ? { clipPath: 'inset(0 0 100% 0)' }
-          : { clipPath: 'inset(0 0 0% 0)' }
-        }
+        className="fixed inset-0 z-[9000] flex flex-col items-center justify-center overflow-hidden"
+        style={{ background: '#1d1d1d' }}
+        animate={phase === 'wipe' ? { clipPath: 'inset(0 0 100% 0)' } : { clipPath: 'inset(0 0 0% 0)' }}
         initial={{ clipPath: 'inset(0 0 0% 0)' }}
-        transition={phase === 'wipe'
-          ? { duration: 0.85, ease: [0.76, 0, 0.24, 1] }
-          : { duration: 0 }
-        }
-        onAnimationComplete={() => {
-          if (phase === 'wipe') handleWipeComplete();
-        }}
+        transition={phase === 'wipe' ? { duration: 0.85, ease: [0.76, 0, 0.24, 1] } : { duration: 0 }}
+        onAnimationComplete={() => { if (phase === 'wipe') handleWipeComplete(); }}
       >
 
-        {/* ── Disturbo CRT animato ── */}
-        <NoiseBackground />
+        {/* Disturbo */}
+        <Noise />
 
-        {/* ── Vignette per profondità ── */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%)',
-          }}
-        />
-
-        {/* ── SVG Logo animato ── */}
+        {/* Logo */}
         <motion.div
           className="relative z-10"
           style={{ width: 'clamp(80px, 14vw, 140px)' }}
-          animate={phase === 'hold' ? { scale: [1, 1.06, 1] } : { scale: 1 }}
-          transition={phase === 'hold' ? { duration: 0.35, ease: 'easeInOut' } : undefined}
+          animate={phase === 'hold' ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+          transition={phase === 'hold' ? { duration: 0.3, ease: 'easeInOut' } : undefined}
         >
-          <svg
-            viewBox="0 0 443 469"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ width: '100%', height: 'auto', overflow: 'visible' }}
-          >
+          <svg viewBox="0 0 443 469" fill="none" xmlns="http://www.w3.org/2000/svg"
+            style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
             {LogoPaths.map((d, i) => (
               <motion.path
-                key={i}
-                d={d}
-                fill="#4be8f2"
+                key={i} d={d} fill="#4be8f2"
                 initial={{ scaleY: 0, opacity: 0 }}
                 animate={{ scaleY: 1, opacity: 1 }}
                 transition={{
                   scaleY:  { duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: PATH_DELAYS[i] },
-                  opacity: { duration: 0.3, ease: 'linear',           delay: PATH_DELAYS[i] },
+                  opacity: { duration: 0.3, ease: 'linear', delay: PATH_DELAYS[i] },
                 }}
                 style={{ transformOrigin: 'bottom center' }}
               />
@@ -193,29 +138,12 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           </svg>
         </motion.div>
 
-        {/* ── Counter ── */}
+        {/* Counter — Inter, piatto */}
         <div
-          className="relative z-10 mt-8 font-sans tabular-nums text-white/25 font-light tracking-[0.32em]"
-          style={{ fontSize: 'clamp(11px, 1.1vw, 13px)' }}
+          className="relative z-10 mt-8 font-sans tabular-nums font-light text-white/30 tracking-[0.3em]"
+          style={{ fontSize: 'clamp(11px, 1vw, 12px)' }}
         >
           {String(count).padStart(3, '0')}
-        </div>
-
-        {/* ── Barra rapida — 3px, sprint easing ── */}
-        <div className="absolute bottom-0 left-0 w-full z-10">
-          {/* Track sottile */}
-          <div className="w-full h-[1px] bg-[#4be8f2]/08" />
-          {/* Bar principale — spessa, veloce */}
-          <div className="absolute bottom-0 left-0 w-full h-[3px] bg-transparent overflow-hidden">
-            <motion.div
-              className="h-full"
-              style={{
-                width: barWidth,
-                background: 'linear-gradient(90deg, #4be8f2 0%, #a8f5fa 50%, #4be8f2 100%)',
-                boxShadow: '0 0 12px rgba(75,232,242,0.8), 0 0 24px rgba(75,232,242,0.3)',
-              }}
-            />
-          </div>
         </div>
 
       </motion.div>
