@@ -222,3 +222,14 @@ Ogni push su `main` triggera deploy automatico.
 ---
 
 *Ultimo aggiornamento: 2026-06-15 · Sessione Claude Sonnet 4.6*
+
+### `77b300d734` — 2026-06-16 · feat: SVG logo path reveal preloader
+**Origine: Claude (questa sessione)**  
+Sostituzione preloader monogramma ADM con preloader basato sul SVG logo reale (`Group_6.svg`).  
+- 4 `<motion.path>` con `scaleY: 0→1` da `transform-origin: bottom center`
+- Stagger 120ms per path — le barre più grandi entrano prima (path 0 e 1), poi media (path 2), poi sottile (path 3)
+- Easing `[0.16, 1, 0.3, 1]` — fast start, soft landing
+- Micro pulse `scale 1→1.06→1` al completamento (fase `hold`)
+- Counter `000→100` + progress bar in parallelo invariati
+- Clip-path wipe verso l'alto invariato
+- Riferimento visual: https://animated-svg-logo-css.webflow.io/
