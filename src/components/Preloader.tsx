@@ -1,7 +1,11 @@
 /**
- * Preloader — counter 0→100, monogram build, clip-path wipe reveal.
- * Sits above everything in App. Calls onComplete when done.
- * Zero dependencies outside motion/react (already installed).
+ * Preloader — SVG logo path reveal + counter + clip-path wipe.
+ * 
+ * Sequenza:
+ * 1. 4 path del logo entrano con scaleY 0→1 dal basso, stagger 120ms
+ * 2. Counter 000→100 in sync (2000ms)
+ * 3. Logo scala leggermente + pulse cyan
+ * 4. Clip-path wipe verso l'alto rivela la hero (850ms)
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -10,41 +14,59 @@ interface PreloaderProps {
   onComplete: () => void;
 }
 
+/* 4 path del logo originale — fill gestito via props per animazione */
+const LogoPaths = [
+  /* path 0 — grande dx top */
+  "M443 217.764C322.732 217.764 225.236 120.268 225.236 0.000148773L443 0.000139254L443 217.764Z",
+  /* path 1 — grande dx bottom */
+  "M443 468.619C322.732 468.619 225.236 371.123 225.236 250.855L443 250.855L443 468.619Z",
+  /* path 2 — media centrale (doppio) */
+  "M193.212 439.484C128.123 401.832 84.3301 331.458 84.3301 250.855H193.212L193.212 439.484ZM193.212 188.629C128.123 150.976 84.3301 80.603 84.3301 0L193.212 0V188.629Z",
+  /* path 3 — piccola sx (doppio) */
+  "M53.374 393.675C20.1286 355.442 3.47557e-05 305.5 0 250.855H53.374L53.374 393.675ZM53.374 142.819C20.1286 104.586 0 54.6444 0 0L53.374 0L53.374 142.819Z",
+];
+
+/* Stagger: le path più grandi entrano prima */
+const PATH_DELAYS = [0, 0.12, 0.24, 0.36];
+
 export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
-  const [count, setCount]       = useState(0);
-  const [phase, setPhase]       = useState<'counting' | 'reveal' | 'done'>('counting');
-  const [visible, setVisible]   = useState(true);
-  const rafRef                  = useRef<number>(0);
-  const startRef                = useRef<number>(0);
-  const DURATION                = 2000; // ms for 0→100
+  const [count, setCount]     = useState(0);
+  const [phase, setPhase]     = useState<'build' | 'hold' | 'wipe'>('build');
+  const [visible, setVisible] = useState(true);
+  const rafRef                = useRef<number>(0);
+  const startRef              = useRef<number>(0);
+  const DURATION              = 2200;
 
   useEffect(() => {
-    // Prevent scroll during preloader
     document.body.style.overflow = 'hidden';
 
     const tick = (ts: number) => {
       if (!startRef.current) startRef.current = ts;
       const elapsed  = ts - startRef.current;
       const progress = Math.min(elapsed / DURATION, 1);
-      // Ease out cubic
       const eased    = 1 - Math.pow(1 - progress, 3);
-      const value    = Math.round(eased * 100);
-      setCount(value);
+      setCount(Math.round(eased * 100));
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
-        // Counter done — brief pause then wipe
-        setTimeout(() => setPhase('reveal'), 220);
+        setTimeout(() => setPhase('hold'), 180);
+        setTimeout(() => setPhase('wipe'), 560);
       }
     };
 
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
+    // Slight delay so paths start animating visibly
+    const id = setTimeout(() => {
+      rafRef.current = requestAnimationFrame(tick);
+    }, 200);
+
+    return () => {
+      clearTimeout(id);
+      cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
-  // When wipe animation ends
-  const handleRevealComplete = () => {
+  const handleWipeComplete = () => {
     setVisible(false);
     document.body.style.overflow = '';
     onComplete();
@@ -54,67 +76,79 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
 
   return (
     <AnimatePresence>
-      {phase !== 'done' && (
+      <motion.div
+        key="preloader"
+        className="fixed inset-0 z-[9000] flex flex-col items-center justify-center bg-[#1d1d1d]"
+        animate={phase === 'wipe'
+          ? { clipPath: 'inset(0 0 100% 0)' }
+          : { clipPath: 'inset(0 0 0% 0)' }
+        }
+        initial={{ clipPath: 'inset(0 0 0% 0)' }}
+        transition={phase === 'wipe'
+          ? { duration: 0.85, ease: [0.76, 0, 0.24, 1] }
+          : { duration: 0 }
+        }
+        onAnimationComplete={() => {
+          if (phase === 'wipe') handleWipeComplete();
+        }}
+      >
+
+        {/* ── SVG Logo animato ── */}
         <motion.div
-          key="preloader"
-          className="fixed inset-0 z-[9000] flex flex-col items-center justify-center bg-[#1d1d1d] select-none"
-          animate={phase === 'reveal' ? { clipPath: 'inset(0 0 100% 0)' } : { clipPath: 'inset(0 0 0% 0)' }}
-          initial={{ clipPath: 'inset(0 0 0% 0)' }}
-          transition={phase === 'reveal' ? { duration: 0.85, ease: [0.76, 0, 0.24, 1] } : undefined}
-          onAnimationComplete={() => {
-            if (phase === 'reveal') handleRevealComplete();
-          }}
+          className="relative"
+          style={{ width: 'clamp(80px, 14vw, 140px)' }}
+          animate={phase === 'hold' ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+          transition={phase === 'hold' ? { duration: 0.35, ease: 'easeInOut' } : undefined}
         >
-          {/* Monogram — 3 letters build in staggered */}
-          <div className="flex items-end gap-[0.04em] mb-6 overflow-hidden">
-            {['A', 'D', 'M'].map((letter, i) => (
-              <motion.span
-                key={letter}
-                className="font-sans text-white leading-none select-none"
-                style={{
-                  fontSize: 'clamp(72px, 14vw, 160px)',
-                  fontWeight: 900,
-                  letterSpacing: '-0.04em',
-                  color: i === 1 ? '#4be8f2' : '#ffffff',
-                }}
-                initial={{ y: '110%', opacity: 0 }}
-                animate={{ y: '0%', opacity: 1 }}
-                transition={{
-                  duration: 0.7,
-                  ease: [0.16, 1, 0.3, 1],
-                  delay: i * 0.08,
-                }}
-              >
-                {letter}
-              </motion.span>
-            ))}
-          </div>
-
-          {/* Counter */}
-          <div
-            className="font-sans font-light tabular-nums text-white/30"
-            style={{ fontSize: 'clamp(11px, 1.2vw, 13px)', letterSpacing: '0.3em' }}
+          <svg
+            viewBox="0 0 443 469"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ width: '100%', height: 'auto', overflow: 'visible' }}
           >
-            {String(count).padStart(3, '0')}
-          </div>
-
-          {/* Progress bar */}
-          <div className="absolute bottom-0 left-0 h-[1px] bg-[#4be8f2]/20 w-full">
-            <motion.div
-              className="h-full bg-[#4be8f2]"
-              style={{ width: `${count}%` }}
-            />
-          </div>
-
-          {/* Subtle grain overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-[0.03]"
-            style={{
-              backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
-            }}
-          />
+            {LogoPaths.map((d, i) => (
+              <motion.path
+                key={i}
+                d={d}
+                fill="#4be8f2"
+                initial={{ scaleY: 0, opacity: 0 }}
+                animate={{ scaleY: 1, opacity: 1 }}
+                transition={{
+                  scaleY:  { duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: PATH_DELAYS[i] },
+                  opacity: { duration: 0.3, ease: 'linear',           delay: PATH_DELAYS[i] },
+                }}
+                style={{ transformOrigin: 'bottom center' }}
+              />
+            ))}
+          </svg>
         </motion.div>
-      )}
+
+        {/* ── Counter ── */}
+        <div
+          className="mt-8 font-sans tabular-nums text-white/25 font-light tracking-[0.32em]"
+          style={{ fontSize: 'clamp(11px, 1.1vw, 13px)' }}
+        >
+          {String(count).padStart(3, '0')}
+        </div>
+
+        {/* ── Progress bar ── */}
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#4be8f2]/10">
+          <motion.div
+            className="h-full bg-[#4be8f2]"
+            animate={{ width: `${count}%` }}
+            transition={{ duration: 0.05, ease: 'linear' }}
+          />
+        </div>
+
+        {/* ── Grain ── */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.025]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+      </motion.div>
     </AnimatePresence>
   );
 };
