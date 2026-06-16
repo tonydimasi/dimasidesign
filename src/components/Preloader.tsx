@@ -1,33 +1,82 @@
 /**
- * Preloader — SVG logo path reveal + counter + clip-path wipe.
- * 
+ * Preloader — SVG logo path reveal + counter + disturbo animato + barra rapida + wipe.
+ *
  * Sequenza:
- * 1. 4 path del logo entrano con scaleY 0→1 dal basso, stagger 120ms
- * 2. Counter 000→100 in sync (2000ms)
- * 3. Logo scala leggermente + pulse cyan
- * 4. Clip-path wipe verso l'alto rivela la hero (850ms)
+ * 1. Sfondo con noise SVG animato (disturbo CRT fluttuante)
+ * 2. 4 path logo entrano scaleY 0→1 staggerate
+ * 3. Barra caricamento rapida (sprint easing, 3px)
+ * 4. Counter 000→100
+ * 5. Pulse logo al completamento
+ * 6. Clip-path wipe verso l'alto
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react';
 
 interface PreloaderProps {
   onComplete: () => void;
 }
 
-/* 4 path del logo originale — fill gestito via props per animazione */
 const LogoPaths = [
-  /* path 0 — grande dx top */
   "M443 217.764C322.732 217.764 225.236 120.268 225.236 0.000148773L443 0.000139254L443 217.764Z",
-  /* path 1 — grande dx bottom */
   "M443 468.619C322.732 468.619 225.236 371.123 225.236 250.855L443 250.855L443 468.619Z",
-  /* path 2 — media centrale (doppio) */
   "M193.212 439.484C128.123 401.832 84.3301 331.458 84.3301 250.855H193.212L193.212 439.484ZM193.212 188.629C128.123 150.976 84.3301 80.603 84.3301 0L193.212 0V188.629Z",
-  /* path 3 — piccola sx (doppio) */
   "M53.374 393.675C20.1286 355.442 3.47557e-05 305.5 0 250.855H53.374L53.374 393.675ZM53.374 142.819C20.1286 104.586 0 54.6444 0 0L53.374 0L53.374 142.819Z",
 ];
 
-/* Stagger: le path più grandi entrano prima */
 const PATH_DELAYS = [0, 0.12, 0.24, 0.36];
+
+/* ── Animated noise canvas — disturbo CRT ── */
+const NoiseBackground: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef    = useRef<number>(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let w = 0, h = 0;
+
+    const resize = () => {
+      w = canvas.width  = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const draw = () => {
+      const imageData = ctx.createImageData(w, h);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        // random grayscale pixel — sparse
+        const v = Math.random() > 0.55 ? Math.floor(Math.random() * 255) : 0;
+        data[i]     = v;
+        data[i + 1] = v;
+        data[i + 2] = v;
+        // low alpha — disturbo delicato
+        data[i + 3] = Math.random() > 0.6 ? Math.floor(Math.random() * 28) : 0;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ mixBlendMode: 'screen', opacity: 0.07 }}
+    />
+  );
+};
 
 export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
   const [count, setCount]     = useState(0);
@@ -37,8 +86,19 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
   const startRef              = useRef<number>(0);
   const DURATION              = 2200;
 
+  // Motion value for the fast loading bar — independent from counter
+  const barProgress = useMotionValue(0);
+  const barWidth    = useTransform(barProgress, [0, 1], ['0%', '100%']);
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+
+    // Fast bar: sprints to 100% with expo ease — feels instant/snappy
+    animate(barProgress, 1, {
+      duration: 1.6,
+      ease: [0.22, 1, 0.36, 1],
+      delay: 0.15,
+    });
 
     const tick = (ts: number) => {
       if (!startRef.current) startRef.current = ts;
@@ -55,7 +115,6 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
       }
     };
 
-    // Slight delay so paths start animating visibly
     const id = setTimeout(() => {
       rafRef.current = requestAnimationFrame(tick);
     }, 200);
@@ -78,7 +137,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
     <AnimatePresence>
       <motion.div
         key="preloader"
-        className="fixed inset-0 z-[9000] flex flex-col items-center justify-center bg-[#1d1d1d]"
+        className="fixed inset-0 z-[9000] flex flex-col items-center justify-center bg-[#1d1d1d] overflow-hidden"
         animate={phase === 'wipe'
           ? { clipPath: 'inset(0 0 100% 0)' }
           : { clipPath: 'inset(0 0 0% 0)' }
@@ -93,9 +152,20 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
         }}
       >
 
+        {/* ── Disturbo CRT animato ── */}
+        <NoiseBackground />
+
+        {/* ── Vignette per profondità ── */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%)',
+          }}
+        />
+
         {/* ── SVG Logo animato ── */}
         <motion.div
-          className="relative"
+          className="relative z-10"
           style={{ width: 'clamp(80px, 14vw, 140px)' }}
           animate={phase === 'hold' ? { scale: [1, 1.06, 1] } : { scale: 1 }}
           transition={phase === 'hold' ? { duration: 0.35, ease: 'easeInOut' } : undefined}
@@ -125,28 +195,28 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
 
         {/* ── Counter ── */}
         <div
-          className="mt-8 font-sans tabular-nums text-white/25 font-light tracking-[0.32em]"
+          className="relative z-10 mt-8 font-sans tabular-nums text-white/25 font-light tracking-[0.32em]"
           style={{ fontSize: 'clamp(11px, 1.1vw, 13px)' }}
         >
           {String(count).padStart(3, '0')}
         </div>
 
-        {/* ── Progress bar ── */}
-        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#4be8f2]/10">
-          <motion.div
-            className="h-full bg-[#4be8f2]"
-            animate={{ width: `${count}%` }}
-            transition={{ duration: 0.05, ease: 'linear' }}
-          />
+        {/* ── Barra rapida — 3px, sprint easing ── */}
+        <div className="absolute bottom-0 left-0 w-full z-10">
+          {/* Track sottile */}
+          <div className="w-full h-[1px] bg-[#4be8f2]/08" />
+          {/* Bar principale — spessa, veloce */}
+          <div className="absolute bottom-0 left-0 w-full h-[3px] bg-transparent overflow-hidden">
+            <motion.div
+              className="h-full"
+              style={{
+                width: barWidth,
+                background: 'linear-gradient(90deg, #4be8f2 0%, #a8f5fa 50%, #4be8f2 100%)',
+                boxShadow: '0 0 12px rgba(75,232,242,0.8), 0 0 24px rgba(75,232,242,0.3)',
+              }}
+            />
+          </div>
         </div>
-
-        {/* ── Grain ── */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.025]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          }}
-        />
 
       </motion.div>
     </AnimatePresence>
