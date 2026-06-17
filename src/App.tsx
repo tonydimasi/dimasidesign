@@ -10,6 +10,9 @@ import { Logo } from './components/Logo';
 import { HeroSection } from './components/HeroSection';
 import { ProjectsSection } from './components/ProjectsSection';
 import { Preloader } from './components/Preloader';
+import { SkillsMarquee } from './components/SkillsMarquee';
+import { DraftSection } from './components/DraftSection';
+import { FooterSection } from './components/FooterSection';
 
 export default function App() {
   const [isReady, setIsReady]   = useState(false);
@@ -40,7 +43,7 @@ export default function App() {
   return (
     <>
       {/* Preloader — sits above everything, calls setIsReady when done */}
-      <Preloader onComplete={() => setIsReady(true)} />
+      {!isReady && <Preloader onComplete={() => setIsReady(true)} />}
 
       <main className="app-container" style={{ opacity: isReady ? 1 : 0, transition: 'opacity 0.6s ease' }}>
         <div id="hero-rounded-card" className="card-wrapper">
@@ -49,7 +52,8 @@ export default function App() {
             onPointerStateChange={handlePointerStateChange}
             scrollProgress={scrollProgress}
           >
-            <div className="logo-placement animate-elegant-fade" style={{ animationDelay: '100ms' }}>
+            {/* Logo sits statically on top of all canvas layers and scroll pane */}
+            <div className="logo-placement animate-elegant-fade" style={{ animationDelay: '100ms', zIndex: 100 }}>
               <Logo />
             </div>
 
@@ -58,6 +62,9 @@ export default function App() {
                 <HeroSection />
               </div>
               <ProjectsSection />
+              <SkillsMarquee />
+              <DraftSection />
+              <FooterSection />
             </div>
           </TopologyBackground>
 

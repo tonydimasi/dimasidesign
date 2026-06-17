@@ -13,7 +13,7 @@ export const FooterSection: React.FC = () => {
   return (
     <section 
       id="contact-footer-section"
-      className="relative w-full bg-[#4be8f2] text-zinc-950 px-8 md:px-12 lg:px-16 py-24 md:py-32 flex flex-col items-center justify-between box-border overflow-hidden select-none font-sans"
+      className="relative w-full bg-[#3CEADC] text-zinc-950 px-8 md:px-12 lg:px-16 py-24 md:py-32 flex flex-col items-center justify-between box-border overflow-hidden select-none font-sans"
     >
       {/* Absolute copyright label */}
       <div className="absolute bottom-4 right-4 text-[10px] text-zinc-950/40 font-sans tracking-wider">
@@ -35,7 +35,7 @@ export const FooterSection: React.FC = () => {
           {/* Pill-shaped beautiful button as requested/sketched */}
           <button 
             onClick={handleCopyEmail}
-            className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 mt-4 rounded-full border border-zinc-950 text-zinc-950 font-medium tracking-wide hover:bg-zinc-950 hover:text-[#4be8f2] transition-all duration-500 cursor-pointer text-sm overflow-hidden"
+            className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 mt-4 rounded-full border border-zinc-950 text-zinc-950 font-medium tracking-wide hover:bg-zinc-950 hover:text-[#3CEADC] transition-all duration-500 cursor-pointer text-sm overflow-hidden"
           >
             <span className="relative z-10 flex items-center gap-2">
               {copied ? 'EMAIL COPIATA!' : 'COPIA INDIRIZZO EMAIL'} <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:rotate-45" />

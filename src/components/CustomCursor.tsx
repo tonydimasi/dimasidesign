@@ -58,8 +58,8 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
         
         {/* Inner intense glowing solid cyan dot */}
         <div 
-          className="w-[5px] h-[5px] rounded-full bg-[#4be8f2]" 
-          style={{ boxShadow: '0 0 8px 2px rgba(75, 232, 242, 0.8)' }} 
+          className="w-[5px] h-[5px] rounded-full bg-[#3CEADC]" 
+          style={{ boxShadow: '0 0 8px 2px rgba(60, 234, 220, 0.8)' }} 
         />
       </div>
     </div>

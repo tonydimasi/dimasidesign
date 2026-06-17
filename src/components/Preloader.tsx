@@ -70,10 +70,14 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
   const [visible, setVisible] = useState(true);
   const rafRef                = useRef<number>(0);
   const startRef              = useRef<number>(0);
+  const completedRef          = useRef<boolean>(false);
   const DURATION              = 2200;
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+
+    let holdTimeout: any = null;
+    let wipeTimeout: any = null;
 
     const tick = (ts: number) => {
       if (!startRef.current) startRef.current = ts;
@@ -82,16 +86,23 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
       if (p < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
-        setTimeout(() => setPhase('hold'), 180);
-        setTimeout(() => setPhase('wipe'), 560);
+        holdTimeout = setTimeout(() => setPhase('hold'), 180);
+        wipeTimeout = setTimeout(() => setPhase('wipe'), 560);
       }
     };
 
     const id = setTimeout(() => { rafRef.current = requestAnimationFrame(tick); }, 200);
-    return () => { clearTimeout(id); cancelAnimationFrame(rafRef.current); };
+    return () => {
+      clearTimeout(id);
+      clearTimeout(holdTimeout);
+      clearTimeout(wipeTimeout);
+      cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   const handleWipeComplete = () => {
+    if (completedRef.current) return;
+    completedRef.current = true;
     setVisible(false);
     document.body.style.overflow = '';
     onComplete();
@@ -125,7 +136,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
             style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
             {LogoPaths.map((d, i) => (
               <motion.path
-                key={i} d={d} fill="#4be8f2"
+                key={i} d={d} fill="#3CEADC"
                 initial={{ scaleY: 0, opacity: 0 }}
                 animate={{ scaleY: 1, opacity: 1 }}
                 transition={{

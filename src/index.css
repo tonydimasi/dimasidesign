@@ -27,7 +27,7 @@
 }
 
 .app-container ::selection {
-  background-color: #4be8f2;
+  background-color: #3CEADC;
   color: #1d1d1d;
 }
 
@@ -295,7 +295,7 @@ html, body, #root {
 .hero-glyph-left, .hero-glyph-right {
   font-family: 'Inter', sans-serif;
   font-weight: 100;
-  color: #4be8f2;
+  color: #3CEADC;
   opacity: 0;
   font-size: 9.2rem; /* Stays in proportion with increased font-size */
   line-height: 0.85;
@@ -365,7 +365,7 @@ html, body, #root {
   pointer-events: auto !important; /* Extremely important to capture scrolling, hover and click events! */
   z-index: 10;
   scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y proximity;
   /* Hide standard scrollbar for extreme cinematic focus */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */
@@ -398,8 +398,7 @@ html, body, #root {
 }
 
 #contact-footer-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  scroll-snap-align: none;
 }
 
 /* Designer statement text on the left */

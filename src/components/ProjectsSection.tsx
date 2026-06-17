@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from 'motion/react';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -12,38 +13,38 @@ interface Project {
 const PROJECTS: Project[] = [
   {
     id: 'mc-geopolicy',
-    title: 'MC GEOPOLICY',
-    description: 'Posizionamento strategico per un ex-ambasciatore nel mercato della consulenza B2B. Focus totale su credibilità istituzionale e relazioni diplomatiche, tradotto in una UX minimalista.',
-    meta: 'B2B CONSULTING',
-    tag: 'STRATEGY'
+    title: 'McGeopolicy',
+    description: 'Posizionamento digitale per un ex-ambasciatore italiano nel mercato della consulenza B2B. Focus su credibilità e trust architecture.',
+    meta: 'B2B · Consulenza',
+    tag: 'UX Strategy'
   },
   {
-    id: 'fintech-design',
-    title: 'FINTECH SYSTEM',
-    description: 'Un design system per applicazioni finanziarie commerciali ad alto livello. Semplifica la lettura di dati complessi e garantisce velocità di implementazione.',
-    meta: 'ENTERPRISE INT.',
-    tag: 'UI KIT'
+    id: 'istituto-confucio',
+    title: 'Istituto Confucio',
+    description: 'Landing page per l\'acquisizione studenti. Architettura di conversione con CTA distribuiti e form semplificato per ridurre la frizione.',
+    meta: 'Education',
+    tag: 'Landing Page'
   },
   {
-    id: 'crypto-portfolio',
-    title: 'CRYPTO MONITOR',
-    description: 'Piattaforma e cruscotto per il monitoraggio in tempo reale di asset digitali. Interfaccia basata su principi di densità informativa bilanciata.',
-    meta: 'METRICS HUB',
-    tag: 'LIVE FEED'
+    id: 'idea-marble',
+    title: 'Idea Marble',
+    description: 'Landing page per il mercato export USA/Canada. Storytelling attraverso progetti realizzati e form di qualificazione lead.',
+    meta: 'Luxury · Export',
+    tag: 'Visual Design'
   },
   {
-    id: 'neural-interface',
-    title: 'NEURAL INTERFACE',
-    description: 'Progettazione e prototipazione della UI per controller neurale di intelligenza artificiale. Flusso dati sincrono ed estetica brutalista high-contrast.',
-    meta: 'AI RESEARCH',
-    tag: 'PROTOTYPE'
+    id: 'criptowallet',
+    title: 'Criptowallet',
+    description: 'Rivista digitale sul mondo crypto. Design editoriale con ticker prezzi real-time e firme autoriali per costruire credibilità.',
+    meta: 'Fintech · Media',
+    tag: 'Editorial Design'
   },
   {
-    id: 'fashion-archive',
-    title: 'ARCHIVAL FASHION',
-    description: 'E-commerce interattivo per un prestigioso archivio milanese di moda di lusso d\'epoca. Tipografia audace e griglie spazianti con cura.',
-    meta: 'LUXURY RETRO',
-    tag: 'ART DIRECTION'
+    id: 'sia-engineering',
+    title: 'SIA Engineering',
+    description: 'Sito corporate per azienda aerospaziale con 5 business unit. Architettura modulare e trust signals per clienti enterprise.',
+    meta: 'Industrial · B2B',
+    tag: 'Corporate'
   }
 ];
 
@@ -68,7 +69,7 @@ const CyanGrid: React.FC<{ opacity: any }> = ({ opacity }) => (
           <path
             d="M 80 0 L 0 0 0 80"
             fill="none"
-            stroke="#4be8f2"
+            stroke="#3CEADC"
             strokeWidth="0.4"
             strokeOpacity="0.55"
           />
@@ -136,7 +137,7 @@ export const ProjectsSection: React.FC = () => {
           <div className="relative z-10 w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
 
             {/* ── LEFT: wide text column ── */}
-            <div className="w-full md:w-[58%] flex flex-col justify-center items-start text-left pointer-events-auto">
+            <div className="w-full md:w-[62%] flex flex-col justify-center items-start text-left pointer-events-auto">
               <p
                 className="font-sans font-light uppercase tracking-tight text-white leading-[1.18] select-text"
                 style={{ fontSize: 'clamp(1.5rem, 3.2vw, 2.6rem)' }}
@@ -145,10 +146,10 @@ export const ProjectsSection: React.FC = () => {
               </p>
             </div>
 
-            {/* ── RIGHT: taller card ── */}
+            {/* ── RIGHT: card ── */}
             <div
-              className="w-full md:w-[38%] flex items-center justify-center relative pointer-events-auto"
-              style={{ height: 'clamp(420px, 58vh, 620px)' }}
+              className="w-full md:w-[33%] flex items-center justify-center relative pointer-events-auto"
+              style={{ height: 'clamp(580px, 75vh, 810px)' }}
             >
               <AnimatePresence mode="popLayout">
                 <motion.div
@@ -157,87 +158,75 @@ export const ProjectsSection: React.FC = () => {
                   animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, y: -100, scale: 0.96, filter: 'blur(6px)' }}
                   transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute w-full flex flex-col bg-[#121212] rounded-[24px] border border-[#4be8f2]/70 shadow-[0_0_40px_rgba(75,232,242,0.13)]"
-                  style={{ height: 'clamp(420px, 58vh, 620px)' }}
+                  className="absolute w-full h-full group rounded-[32px] overflow-hidden cursor-pointer bg-black"
                 >
-                  {/* Card inner preview — takes most of the height */}
-                  <div className="relative flex-1 rounded-[20px] overflow-hidden bg-zinc-950 m-2.5 mb-0">
-
-                    {activeProject.id === 'mc-geopolicy' && (
-                      <div className="absolute inset-0 bg-[#090b11] flex items-center justify-center overflow-hidden">
-                        <div className="relative flex items-center justify-center scale-75 opacity-40">
-                          <div className="w-72 h-72 rounded-full border border-dashed border-[#4be8f2]/40 animate-[spin_120s_linear_infinite]" />
-                          <div className="absolute w-52 h-52 rounded-full border border-[#4be8f2]/25 animate-[spin_80s_linear_infinite_reverse]" />
-                          <div className="absolute w-32 h-32 rounded-full border border-dashed border-[#4be8f2]/20" />
-                          <div className="absolute w-10 h-10 rounded-full bg-[#4be8f2]/10 border border-[#4be8f2]/40" />
-                        </div>
-                      </div>
-                    )}
-
-                    {activeProject.id === 'fintech-design' && (
-                      <div className="absolute inset-0 bg-[#0c0d12] p-6 flex flex-col gap-4 justify-center overflow-hidden">
-                        {[0.66, 0.8, 0.5].map((w, i) => (
-                          <div key={i} className="bg-zinc-900/80 border border-white/5 rounded-lg p-3 flex flex-col gap-2">
-                            <div className="h-1.5 rounded bg-zinc-700" style={{ width: `${(i + 1) * 20}%` }} />
-                            <div className="h-1 w-full bg-[#4be8f2]/15 rounded overflow-hidden">
-                              <div className="h-full bg-[#4be8f2]" style={{ width: `${w * 100}%` }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {activeProject.id === 'crypto-portfolio' && (
-                      <div className="absolute inset-0 bg-[#02050b] flex items-center justify-center p-6 overflow-hidden">
-                        <svg className="w-full" viewBox="0 0 100 36" preserveAspectRatio="none">
-                          <defs>
-                            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#4be8f2" stopOpacity="0.25" />
-                              <stop offset="100%" stopColor="#4be8f2" stopOpacity="0" />
-                            </linearGradient>
-                          </defs>
-                          <path d="M0,28 Q15,10 30,24 T60,6 T90,20 T100,4 L100,36 L0,36Z" fill="url(#cg)" />
-                          <path d="M0,28 Q15,10 30,24 T60,6 T90,20 T100,4" fill="none" stroke="#4be8f2" strokeWidth="1.2" />
-                        </svg>
-                      </div>
-                    )}
-
-                    {activeProject.id === 'neural-interface' && (
-                      <div className="absolute inset-0 bg-[#0d0d0d] p-6 flex flex-col gap-3 justify-center overflow-hidden">
-                        {[1, 0.6, 0.8].map((o, i) => (
-                          <div key={i} className="border border-zinc-800 p-3 rounded-lg bg-zinc-950/60 flex flex-col gap-1.5">
-                            <div className="h-1 rounded bg-[#4be8f2]" style={{ width: '45%', opacity: o }} />
-                            <div className="h-1 rounded bg-zinc-700" style={{ width: '70%' }} />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {activeProject.id === 'fashion-archive' && (
-                      <div className="absolute inset-0 bg-[#161413] flex flex-col items-center justify-center gap-3 overflow-hidden">
-                        <div className="w-14 h-14 rounded-full border border-[#4be8f2]/30 flex items-center justify-center">
-                          <div className="w-7 h-7 rounded-full border border-[#4be8f2]/50" />
-                        </div>
-                        <div className="h-1.5 w-20 bg-[#4be8f2]/40 rounded" />
-                      </div>
-                    )}
-
+                  {/* Future link arrow at the top right of the card, appearing on hover */}
+                  <div className="absolute top-8 right-8 z-20 text-white opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300 ease-out select-none pointer-events-none">
+                    <ArrowUpRight className="h-8 w-8" strokeWidth={1.5} />
                   </div>
 
-                  {/* Card footer — project info */}
-                  <div className="px-4 py-4 flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="font-sans font-semibold uppercase tracking-tight text-white"
-                        style={{ fontSize: 'clamp(0.95rem, 1.4vw, 1.15rem)' }}
-                      >
-                        {activeProject.title}
-                      </span>
-                      <span className="text-[10px] font-light tracking-widest text-[#4be8f2] uppercase">
-                        {activeProject.tag}
-                      </span>
-                    </div>
-                    <p className="text-[11px] font-light text-white/40 leading-relaxed line-clamp-2">
+                  {/* Full Background Image */}
+                  <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
+                    {/* McGeopolicy Image */}
+                    {activeProject.id === 'mc-geopolicy' && (
+                      <img 
+                        src="https://dimasidesign.it/assets/carnelos.jpg" 
+                        alt="McGeopolicy" 
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover object-center opacity-100 transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    )}
+
+                    {/* Chinese Institute Image */}
+                    {activeProject.id === 'istituto-confucio' && (
+                      <img 
+                        src="https://dimasidesign.it/assets/confucio.jpg" 
+                        alt="Istituto Confucio" 
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover object-top opacity-100 transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    )}
+
+                    {/* Idea Marble Image */}
+                    {activeProject.id === 'idea-marble' && (
+                      <img 
+                        src="https://dimasidesign.it/assets/ideamarble.jpg" 
+                        alt="Idea Marble" 
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover object-center opacity-100 transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    )}
+
+                    {/* Credit Wallet Image */}
+                    {activeProject.id === 'criptowallet' && (
+                      <img 
+                        src="https://dimasidesign.it/assets/criptowallet.jpg" 
+                        alt="Criptowallet" 
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover object-top opacity-100 transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    )}
+
+                    {/* SIA Engineering Image */}
+                    {activeProject.id === 'sia-engineering' && (
+                      <img 
+                        src="https://dimasidesign.it/assets/sia.jpg" 
+                        alt="SIA Engineering" 
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover object-center opacity-100 transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    )}
+                  </div>
+
+                  {/* Dark Gradient Overlay smoothly darkening only the lower part of the card (no top shadows) */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
+
+                  {/* Typography container over continuous image background */}
+                  <div className="absolute bottom-0 left-0 w-full px-8 pb-8 pt-24 flex flex-col gap-2 z-10">
+                    <span className="font-sans font-semibold tracking-tight text-white text-[22px] md:text-[24px]">
+                      {activeProject.title}
+                    </span>
+                    <p className="font-sans text-[16px] md:text-[17px] font-light text-zinc-100/95 leading-relaxed text-left select-text">
                       {activeProject.description}
                     </p>
                   </div>

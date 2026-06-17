@@ -229,8 +229,8 @@ export const TopologyBackground: React.FC<TopologyBackgroundProps> = ({
           float level_density = noise(p * 0.35 + u_time * 0.002) * 0.40 + 0.60;
           total_line *= level_density;
           
-          // Perfect #4be8f2 social brand cyan color for pure professional topology lines
-          vec3 line_color = vec3(0.294118, 0.909804, 0.949020);
+          // Perfect #3CEADC social brand cyan color for pure professional topology lines
+          vec3 line_color = vec3(0.235294, 0.917647, 0.862745);
           
           // Increased visual visibility and elegant opacity blend for clearer vector topology lines
           vec3 final_color = mix(bg_color, line_color, total_line * 0.35);
@@ -654,7 +654,7 @@ export const TopologyBackground: React.FC<TopologyBackgroundProps> = ({
 
   if (hasError) {
     return (
-      <div id="fallback-container" className="flex items-center justify-center w-full h-full bg-[#1d1d1d] text-[#4be8f2] font-mono text-center px-6">
+      <div id="fallback-container" className="flex items-center justify-center w-full h-full bg-[#1d1d1d] text-[#3CEADC] font-mono text-center px-6">
         <p id="error-message">Interactive Fluid Canvas requires WebGL support.</p>
       </div>
     );
