@@ -134,22 +134,21 @@ export const ProjectsSection: React.FC = () => {
           {/* Cyan grid — fades in as user scrolls */}
           <CyanGrid opacity={gridOpacity} />
 
-          <div className="relative z-10 w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
+          <div className="relative z-10 w-full max-w-none flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20 px-6 sm:px-12 md:px-16 lg:px-24 xl:px-32">
 
-            {/* ── LEFT: wide text column ── */}
-            <div className="w-full md:w-[62%] flex flex-col justify-center items-start text-left pointer-events-auto">
+            {/* ── LEFT: text column (unboxed, full height layout, side-by-side, large typography) ── */}
+            <div className="w-full md:w-[48%] lg:w-[44%] flex flex-col justify-center items-start text-left pointer-events-auto">
               <p
-                className="font-sans font-light uppercase tracking-tight text-white leading-[1.18] select-text"
+                className="font-sans font-light uppercase tracking-tight text-zinc-300 leading-[1.25] select-text"
                 style={{ fontSize: 'clamp(1.5rem, 3.2vw, 2.6rem)' }}
               >
                 DESIGNER SPECIALIZZATO IN UX/UI CON UN APPROCCIO STRATEGICO. TRASFORMO PROBLEMI COMPLESSI IN ESPERIENZE DIGITALI INTUITIVE E COINVOLGENTI. IL MIO BACKGROUND INCLUDE BRANDING, SVILUPPO WEB E DIREZIONE ARTISTICA. QUESTO MI PERMETTE DI VEDERE I PROGETTI DA PIÙ ANGOLAZIONI E CREARE SOLUZIONI CHE FUNZIONANO SIA ESTETICAMENTE CHE STRATEGICAMENTE. LAVORO CON STARTUP, AGENZIE E AZIENDE CONSOLIDATE IN ITALIA E ALL'ESTERO.
               </p>
             </div>
 
-            {/* ── RIGHT: card ── */}
+            {/* ── RIGHT: massive, almost square card (side-by-side) ── */}
             <div
-              className="w-full md:w-[33%] flex items-center justify-center relative pointer-events-auto"
-              style={{ height: 'clamp(580px, 75vh, 810px)' }}
+              className="w-full md:w-[48%] lg:w-[50%] flex items-center justify-center relative pointer-events-auto aspect-[1/1.05] h-[75vh] max-h-[85vh]"
             >
               <AnimatePresence mode="popLayout">
                 <motion.div

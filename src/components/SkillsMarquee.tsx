@@ -13,10 +13,6 @@ const ROW_2 = [
   'CRO Optimisation', 'A/B Testing', 'Conversion Rate', 'Landing Page', 'Heuristic Analysis', 'Product Design', 'Visual Identity',
   'CRO Optimisation', 'A/B Testing', 'Conversion Rate', 'Landing Page', 'Heuristic Analysis', 'Product Design', 'Visual Identity'
 ];
-const ROW_3 = [
-  'UX Design', 'UI Design', 'Figma', 'Branding', 'Web Design', 'Prototyping', 'Design System',
-  'UX Design', 'UI Design', 'Figma', 'Branding', 'Web Design', 'Prototyping', 'Design System'
-];
 
 interface MarqueeRowProps {
   items: string[];
@@ -118,7 +114,7 @@ const MarqueeRow: React.FC<MarqueeRowProps> = ({ items, direction, speed, initia
 export const SkillsMarquee: React.FC = () => {
   return (
     <section
-      className="relative w-full bg-[#3CEADC] py-16 md:py-24 flex flex-col justify-center gap-6 md:gap-8 overflow-hidden select-none"
+      className="relative w-full bg-[#3CEADC] py-8 md:py-12 flex flex-col justify-center gap-3 md:gap-4 overflow-hidden select-none"
       aria-label="Skills Marquee"
     >
       {/* SEO keywords hidden markup */}
@@ -127,9 +123,21 @@ export const SkillsMarquee: React.FC = () => {
         CRO Optimisation, A/B Testing, Conversion Rate, Landing Page, Heuristic Analysis, Product Design, Visual Identity
       </div>
 
-      <MarqueeRow items={ROW_1} direction="right" speed={1.1} initialOffsetPercent={0.5} />
-      <MarqueeRow items={ROW_2} direction="left"  speed={0.8} initialOffsetPercent={0.1} />
-      <MarqueeRow items={ROW_3} direction="right" speed={1.4} initialOffsetPercent={0.7} />
+      {/* Linear gradient overlays for flawless side-edge element fading */}
+      <div className="absolute top-0 bottom-0 left-0 w-24 sm:w-36 md:w-48 bg-gradient-to-r from-[#3CEADC] via-[#3CEADC]/70 to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 bottom-0 right-0 w-24 sm:w-36 md:w-48 bg-gradient-to-l from-[#3CEADC] via-[#3CEADC]/70 to-transparent pointer-events-none z-10" />
+
+      {/* True transparency mask-image applied to entire marquee container */}
+      <div 
+        className="relative z-0 flex flex-col gap-3 md:gap-4"
+        style={{
+          maskImage: 'linear-gradient(to right, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 150px, black calc(100% - 150px), transparent 100%)'
+        }}
+      >
+        <MarqueeRow items={ROW_1} direction="right" speed={1.1} initialOffsetPercent={0.5} />
+        <MarqueeRow items={ROW_2} direction="left"  speed={0.8} initialOffsetPercent={0.1} />
+      </div>
     </section>
   );
 };
