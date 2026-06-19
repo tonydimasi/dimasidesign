@@ -11,7 +11,7 @@ import { HeroSection } from './components/HeroSection';
 import { ProjectsSection } from './components/ProjectsSection';
 import { Preloader } from './components/Preloader';
 import { SkillsMarquee } from './components/SkillsMarquee';
-import { DraftSection } from './components/DraftSection';
+import { IntegratedActivitySection } from './components/IntegratedActivitySection';
 import { FooterSection } from './components/FooterSection';
 
 export default function App() {
@@ -63,7 +63,7 @@ export default function App() {
               </div>
               <ProjectsSection />
               <SkillsMarquee />
-              <DraftSection />
+               <IntegratedActivitySection />
               <FooterSection />
             </div>
           </TopologyBackground>
